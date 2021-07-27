@@ -430,14 +430,42 @@ export default class Pickr {
         // Provide hiding / showing abilities only if showAlways is false
         if (!options.showAlways) {
             const ck = options.closeWithKey;
+            let isMouseDown;
 
             eventBindings.push(
 
+                _.on(_root.app, 'mousedown', e => {
+                    isMouseDown = true;
+                }),
+
+                _.on(_root.button, 'mousedown', e => {
+                    isMouseDown = true;
+                }),
+
                 // Save and hide / show picker
-                _.on(_root.button, 'click', () => this.isOpen() ? this.hide() : this.show()),
+                _.on(_root.button, 'click', (e) => {
+                    isMouseDown = false;
+                    this.isOpen() ? this.hide() : this.show();
+                }),
 
                 // Close with escape key
-                _.on(document, 'keyup', e => this.isOpen() && (e.key === ck || e.code === ck) && this.hide()),
+                _.on(_root.app, 'keydown', e => {
+                    if (this.isOpen() && (e.key === ck || e.code === ck)) {
+                        e.stopPropagation();
+                        this.hide();
+                        _root.button.focus();
+                    }
+                }),
+
+                _.on(_root.app, 'focusout', (event) => {
+                    if (isMouseDown) {
+                        isMouseDown = false;
+                        return;
+                    }
+                    if (this.isOpen() && !_root.app.contains(event.relatedTarget)) {
+                        this.hide();
+                    }
+                }),
 
                 // Cancel selecting if the user taps behind the color picker
                 _.on(document, ['touchstart', 'mousedown'], e => {
@@ -615,7 +643,16 @@ export default class Pickr {
      * @returns {boolean}
      */
     addSwatch(color) {
-        const {values} = this._parseLocalColor(color);
+        let colorValue;
+        let colorLabel;
+        if (Array.isArray(color)) {
+            colorLabel = `${color[1]} ${this._t('btn:swatch')}`;
+            colorValue = color[0];
+        } else {
+            colorLabel = this._t('btn:swatch');
+            colorValue = color;
+        }
+        const {values} = this._parseLocalColor(colorValue);
 
         if (values) {
             const {_swatchColors, _root} = this;
@@ -623,7 +660,7 @@ export default class Pickr {
 
             // Create new swatch HTMLElement
             const el = _.createElementFromString(
-                `<button type="button" style="--pcr-color: ${color.toRGBA().toString(0)}" aria-label="${this._t('btn:swatch')}"/>`
+                `<button type="button" style="--pcr-color: ${color.toRGBA().toString(0)}" aria-label="${colorLabel}"/>`
             );
 
             // Append element and save swatch data
