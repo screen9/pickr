@@ -64,7 +64,7 @@ const path = require('path');
         await webpack({
             mode: 'production',
             entry: path.resolve('./src/js/pickr.js'),
-
+            target: filename === 'pickr.es5.min.js' ? ['web', 'es5'] : ['web'],
             output: {
                 filename,
                 path: path.resolve('./dist'),
