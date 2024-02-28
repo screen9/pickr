@@ -332,6 +332,10 @@ export default class Pickr {
                         color.h = v * 360;
                     }
 
+                    this.wrapper.setAttribute('aria-valuemin', '0');
+                    this.wrapper.setAttribute('aria-valuemax', '360');
+                    this.wrapper.setAttribute('aria-valuenow', Math.round(color.h));
+
                     // Update color
                     this.element.style.backgroundColor = `hsl(${color.h}, 100%, 50%)`;
                     components.palette.trigger();
@@ -355,6 +359,10 @@ export default class Pickr {
                     if (inst._recalc) {
                         color.a = Math.round(v * 1e2) / 100;
                     }
+
+                    this.wrapper.setAttribute('aria-valuemin', '0');
+                    this.wrapper.setAttribute('aria-valuemax', '1');
+                    this.wrapper.setAttribute('aria-valuenow', parseFloat(color.a.toFixed(2)));
 
                     // Update color
                     this.element.style.background = `rgba(0, 0, 0, ${color.a})`;
@@ -443,7 +451,7 @@ export default class Pickr {
                 }),
 
                 // Save and hide / show picker
-                _.on(_root.button, 'click', (e) => {
+                _.on(_root.button, 'click', e => {
                     isMouseDown = false;
                     this.isOpen() ? this.hide() : this.show();
                 }),
@@ -457,7 +465,7 @@ export default class Pickr {
                     }
                 }),
 
-                _.on(_root.app, 'focusout', (event) => {
+                _.on(_root.app, 'focusout', event => {
                     if (isMouseDown) {
                         isMouseDown = false;
                         return;
